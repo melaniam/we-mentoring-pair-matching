@@ -19,6 +19,7 @@
   "homepage": "https://github.com/melaniam/we-mentoring-pair-matching#readme",
   "dependencies": {
     "csv-parser": "^3.0.0",
+    "csv-stringify": "^6.2.0",
     "strip-bom-stream": "^5.0.0"
   }
 }

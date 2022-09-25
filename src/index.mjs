@@ -1,11 +1,13 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 import stripBom from 'strip-bom-stream';
+import { stringify } from 'csv-stringify';
 
 import { mapMenteesToMentors } from './mapping.mjs';
 
 const pathToMentorsFile = './input/mentors.csv';
 const pathToMenteesFile = './input/mentees.csv';
+const pathToMappingsFile = './output/mappings.csv';
 
 const mentorsPromise = new Promise((resolve, reject) => {
     const mentors = [];
@@ -31,9 +33,28 @@ const menteesPromise = new Promise((resolve, reject) => {
 });
 
 Promise.all([mentorsPromise, menteesPromise]).then(([mentors, mentees]) => {
-    console.log('----- mentees', mentees);
+    const mappings = mapMenteesToMentors(mentors, mentees);
 
-    const mapping = mapMenteesToMentors(mentors, mentees);
+    const writableStream = fs.createWriteStream(pathToMappingsFile);
+    const columns = [
+        'email',
+        'name',
+        'role',
+        'workplace',
+        'linkedin',
+        'typeOfRole',
+        'areaOfExpertise',
+        'topicsToMentorOn',
+        'numberOfMentees',
+        'mappedMentees',
+    ];
 
-    console.log('---- mentors & mentees', mapping);
+    const stringifier = stringify({ header: true, columns: columns });
+
+    mappings.forEach((mapping) => {
+        stringifier.write(mapping);
+    });
+
+    stringifier.pipe(writableStream);
+    console.log('Finished writing data');
 });
