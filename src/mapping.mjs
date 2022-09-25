@@ -60,7 +60,7 @@ const getAreaOfExpertise = (area) => {
 const menteeCanBeMappedToMentor = (mentor, mentee) => {
     // do not match members of the same company
     if (mentor.workplace === mentee.workplace) {
-        return null;
+        return false;
     }
 
     // match higher level of seniority with the same or lower levels of seniority
@@ -71,7 +71,7 @@ const menteeCanBeMappedToMentor = (mentor, mentee) => {
     // else try to map everyone to everyone
     if (mentorTypeOfRole && menteeTypeOfRole) {
         if (mentorTypeOfRole.index < menteeTypeOfRole.index) {
-            return null;
+            return false;
         }
     }
 
@@ -79,19 +79,19 @@ const menteeCanBeMappedToMentor = (mentor, mentee) => {
     const mentorAreaOfExpertise = getAreaOfExpertise(mentor.areaOfExpertise);
     const menteeAreaOfExpertise = getAreaOfExpertise(mentee.topicsToBeMentoredOn);
     if (mentorAreaOfExpertise !== menteeAreaOfExpertise) {
-        return null;
+        return false;
     }
 
-    return mentee;
+    return true;
 };
 
 export const mapMenteesToMentors = (mentors, mentees) => {
     return mentors.map((mentor) => {
-        const mappedMentees = mentees.map((mentee) => menteeCanBeMappedToMentor(mentor, mentee));
+        const mappedMentees = mentees.filter((mentee) => menteeCanBeMappedToMentor(mentor, mentee));
 
         return {
             ...mentor,
-            mappedMentees: mappedMentees.filter((mentee) => mentee !== null),
+            mappedMentees,
         };
     });
 };
