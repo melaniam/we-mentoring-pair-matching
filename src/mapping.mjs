@@ -25,37 +25,37 @@ const TYPES_OF_ROLES = {
     },
 };
 
-const TYPES_OF_AREAS_OF_EXPERTISE = {
-    engineering: {
-        label: 'Engineering',
-        id: 'engineering',
-    },
-    qa: {
-        label: 'QA',
-        id: 'qa',
-    },
-    projectManagement: {
-        label: 'Project Management',
-        id: 'projectManagement',
-    },
-    productManagement: {
-        label: 'Product Management',
-        id: 'productManagement',
-    },
-    design: {
-        label: 'Design',
-        id: 'design',
-    },
-};
+// const TYPES_OF_AREAS_OF_EXPERTISE = {
+//     engineering: {
+//         label: 'Engineering',
+//         id: 'engineering',
+//     },
+//     qa: {
+//         label: 'QA',
+//         id: 'qa',
+//     },
+//     projectManagement: {
+//         label: 'Project Management',
+//         id: 'projectManagement',
+//     },
+//     productManagement: {
+//         label: 'Product Management',
+//         id: 'productManagement',
+//     },
+//     design: {
+//         label: 'Design',
+//         id: 'design',
+//     },
+// };
 
 const getTypeOfRole = (person) => {
-    return Object.values(TYPES_OF_ROLES).find((type) => type.label === person.typeOfRole);
+    return Object.values(TYPES_OF_ROLES).find((type) => type.label === person.typeOfRole.trim());
 };
 
-const getAreaOfExpertise = (area) => {
-    const typeOfArea = Object.values(TYPES_OF_AREAS_OF_EXPERTISE).find((areaType) => areaType.label === area);
-    return typeOfArea ? typeOfArea.id : null;
-};
+// const getAreaOfExpertise = (area) => {
+//     const typeOfArea = Object.values(TYPES_OF_AREAS_OF_EXPERTISE).find((areaType) => areaType.label === area);
+//     return typeOfArea ? typeOfArea.id : null;
+// };
 
 const menteeCanBeMappedToMentor = (mentor, mentee) => {
     // do not match members of the same company
@@ -75,19 +75,23 @@ const menteeCanBeMappedToMentor = (mentor, mentee) => {
         }
     }
 
+    // TODO: match based on topics
+
     // do not match people if they have different areas of expertise
-    const mentorAreaOfExpertise = getAreaOfExpertise(mentor.areaOfExpertise);
-    const menteeAreaOfExpertise = getAreaOfExpertise(mentee.topicsToBeMentoredOn);
-    if (mentorAreaOfExpertise !== menteeAreaOfExpertise) {
-        return false;
-    }
+    // const mentorAreaOfExpertise = getAreaOfExpertise(mentor.areaOfExpertise);
+    // const menteeAreaOfExpertise = getAreaOfExpertise(mentee.topicsToBeMentoredOn);
+    // if (mentorAreaOfExpertise !== menteeAreaOfExpertise) {
+    //     return false;
+    // }
 
     return true;
 };
 
 export const mapMenteesToMentors = (mentors, mentees) => {
     return mentors.map((mentor) => {
-        const mappedMentees = mentees.filter((mentee) => menteeCanBeMappedToMentor(mentor, mentee));
+        const mappedMentees = mentees
+            .filter((mentee) => menteeCanBeMappedToMentor(mentor, mentee))
+            .map((mentee) => mentee.name);
 
         return {
             ...mentor,
