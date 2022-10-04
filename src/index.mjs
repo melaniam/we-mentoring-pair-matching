@@ -37,16 +37,25 @@ Promise.all([mentorsPromise, menteesPromise]).then(([mentors, mentees]) => {
 
     const writableStream = fs.createWriteStream(pathToMappingsFile);
     const columns = [
-        'email',
-        'name',
-        'role',
-        'workplace',
-        'linkedin',
-        'typeOfRole',
-        'areaOfExpertise',
-        'topicsToMentorOn',
-        'numberOfMentees',
-        'mappedMentees',
+        // 'email',
+        // 'name',
+        // 'role',
+        // 'workplace',
+        // 'linkedin',
+        // 'typeOfRole',
+        // 'areaOfExpertise',
+        // 'topicsToMentorOn',
+        // 'numberOfMentees',
+        // 'mappedMentees',
+        'mentor',
+        'mentorRole',
+        'mentorAreaOfExpertise',
+        'mentorTopicsLong',
+        'commonTopics',
+        'mentee',
+        'menteeRole',
+        'menteeTopicsLong',
+        'menteeLearningGoal',
     ];
 
     const stringifier = stringify({ header: true, columns: columns });

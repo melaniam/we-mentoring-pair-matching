@@ -25,42 +25,14 @@ const TYPES_OF_ROLES = {
     },
 };
 
-// const TYPES_OF_AREAS_OF_EXPERTISE = {
-//     engineering: {
-//         label: 'Engineering',
-//         id: 'engineering',
-//     },
-//     qa: {
-//         label: 'QA',
-//         id: 'qa',
-//     },
-//     projectManagement: {
-//         label: 'Project Management',
-//         id: 'projectManagement',
-//     },
-//     productManagement: {
-//         label: 'Product Management',
-//         id: 'productManagement',
-//     },
-//     design: {
-//         label: 'Design',
-//         id: 'design',
-//     },
-// };
-
 const getTypeOfRole = (person) => {
     return Object.values(TYPES_OF_ROLES).find((type) => type.label === person.typeOfRole.trim());
 };
 
-// const getAreaOfExpertise = (area) => {
-//     const typeOfArea = Object.values(TYPES_OF_AREAS_OF_EXPERTISE).find((areaType) => areaType.label === area);
-//     return typeOfArea ? typeOfArea.id : null;
-// };
-
-const menteeCanBeMappedToMentor = (mentor, mentee) => {
+const getTopicsOnWhichMenteeCanBeMentoredByMentor = (mentor, mentee) => {
     // do not match members of the same company
     if (mentor.workplace === mentee.workplace) {
-        return false;
+        return [];
     }
 
     // match higher level of seniority with the same or lower levels of seniority
@@ -70,32 +42,92 @@ const menteeCanBeMappedToMentor = (mentor, mentee) => {
     // if they didn't choose "Other", look at the seniority level
     // else try to map everyone to everyone
     if (mentorTypeOfRole && menteeTypeOfRole) {
-        if (mentorTypeOfRole.index < menteeTypeOfRole.index) {
-            return false;
+        const levelDiff = mentorTypeOfRole.index - menteeTypeOfRole.index;
+        if (levelDiff < 0 || levelDiff > 2) {
+            return [];
         }
     }
 
-    // TODO: match based on topics
+    const mentorTopics = mentor.topicsToMentorOn.split(',');
+    const menteeTopics = mentee.topicsToBeMentoredOn.split(',');
 
-    // do not match people if they have different areas of expertise
-    // const mentorAreaOfExpertise = getAreaOfExpertise(mentor.areaOfExpertise);
-    // const menteeAreaOfExpertise = getAreaOfExpertise(mentee.topicsToBeMentoredOn);
-    // if (mentorAreaOfExpertise !== menteeAreaOfExpertise) {
-    //     return false;
-    // }
+    const matchingMentorTopics = mentorTopics.filter((mentorTopic) =>
+        menteeTopics.some((menteeTopic) => menteeTopic === mentorTopic)
+    );
 
-    return true;
+    return matchingMentorTopics;
 };
 
 export const mapMenteesToMentors = (mentors, mentees) => {
-    return mentors.map((mentor) => {
-        const mappedMentees = mentees
-            .filter((mentee) => menteeCanBeMappedToMentor(mentor, mentee))
-            .map((mentee) => mentee.name);
+    const results = [];
 
-        return {
-            ...mentor,
-            mappedMentees,
-        };
+    // First pass
+    mentors.forEach((mentor) => {
+        mentees.forEach((mentee) => {
+            const topics = getTopicsOnWhichMenteeCanBeMentoredByMentor(mentor, mentee);
+
+            if (topics.length > 0) {
+                // && !mentor.assignedOnce && !mentee.assigned) {
+                // mentor.assignedOnce = true;
+                // mentee.assigned = true;
+
+                results.push({
+                    mentor: mentor.name,
+                    mentorRole: mentor.role,
+                    mentorAreaOfExpertise: mentor.areaOfExpertise,
+                    mentorTopicsLong: mentor.topicsToMentorOn_long,
+                    commonTopics: topics,
+                    mentee: mentee.name,
+                    menteeRole: mentee.typeOfRole,
+                    menteeTopicsLong: mentee.topicsToBeMentoredOn_long,
+                    menteeLearningGoal: mentee.learningGoal,
+                });
+            }
+        });
     });
+
+    // Second pass
+    // mentors.forEach((mentor) => {
+    //     if (mentor.numberOfMentees === '1') {
+    //         return;
+    //     }
+
+    //     const mentorWantsToBeContacted = mentor.numberOfMentees.includes('contact');
+
+    //     mentees.forEach((mentee) => {
+    //         const topics = getTopicsOnWhichMenteeCanBeMentoredByMentor(mentor, mentee);
+
+    //         if (topics.length > 0 && !mentor.assignedTwice && !mentee.assigned) {
+    //                 mentor.assignedTwice = true;
+    //                 mentee.assigned = true;
+
+    //             results.push({
+    //                 mentor: mentor.name,
+    //                 mentee: mentee.name,
+    //                 topics,
+    //                 contact: mentorWantsToBeContacted ? 'contact!' : '',
+    //             });
+    //         }
+    //     });
+    // });
+
+    // mentors.forEach((mentor) => {
+    //     if (!mentor.assignedOnce) {
+    //         results.push({
+    //             mentor: mentor.name,
+    //             mentee: '-',
+    //         });
+    //     }
+    // });
+
+    // mentees.forEach((mentee) => {
+    //     if (!mentee.assigned) {
+    //         results.push({
+    //             mentor: '-',
+    //             mentee: mentee.name,
+    //         });
+    //     }
+    // });
+
+    return results;
 };
